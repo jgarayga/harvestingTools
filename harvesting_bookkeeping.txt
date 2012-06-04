@@ -1,0 +1,1 @@
+{"/WW_TuneZ2star_8TeV_pythia6_tauola/Summer12-PU_S7_START50_V15-v1/DQM": [1]}
