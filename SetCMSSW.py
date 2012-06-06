@@ -53,8 +53,8 @@ class SetEnv:
 
 #########################################################################################
 #
-#    Next functions check if CMSSW_X_Y_Z  is installed, if DQM/Integration package
-#    is installed. If it is not the installation is done. If it is, the code is compiled
+#    Next functions check if CMSSW_X_Y_Z  is installed and if DQM/Integration package
+#    is installed. If it is not, the installation is done. After the code is compiled
 #
 #########################################################################################
 	 

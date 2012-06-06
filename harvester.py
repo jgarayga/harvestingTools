@@ -16,6 +16,7 @@ from DBSUtilities import *
 from Bookkeeping import *
 from rfstat import *
 from CMSHarvesterHelpFormatter import *
+from SetCMSSW import *
 
 ###########################################################################
 
@@ -196,6 +197,8 @@ class CMSHarvester(object):
         "Main entry point of the CMS harvester."
         
         self.parse_cmd_line_options()
+	
+	self.setcmssw = SetEnv()
 
         self.dbs_api=DBS()
         query = "find dataset, release, dataset.tag, datatype where dataset="+self.dataset_name
@@ -206,8 +209,11 @@ class CMSHarvester(object):
         DSs=self.DS_list(dic)
         
         self.bookkeep(DSs)
-        #print DSs[0].name
-        #self.create_cmssw_cfg(DS)
+        print DSs[0].name
+	cmssw="CMSSW_5_2_5" #Later on this command must be modified to read the
+	                    #CMSSW from the dbs search
+	self.setcmssw.SetCMSSW(cmssw)
+	#self.create_cmssw_cfg(DS)
         #self.create_crab_cfg(DS)
         #self.create_batch_script(DS)
         #self.execute()
