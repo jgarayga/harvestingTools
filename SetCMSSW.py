@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 class SetEnv:
 
@@ -81,20 +82,20 @@ class SetEnv:
 	 ''' Install CMSSW_X_Y_Z release.
 	     At the end, the working directory is the 'basedir' '''
 	 
-	 os.chdir(self.basedir)
-         os.system("scramv1 project CMSSW "+cmssw)
-	 os.chdir(self.basedir+"/"+cmssw+'/src')
-	 os.system("eval `scramv1 runtime -sh`") ##REMEMBER: alias cmsenv='eval `scramv1 runtime -sh`'
-	 os.system("cvs co DQM/Integration/scripts/harvesting_tools")
-	 os.system("cvs co -r 1.303 Configuration/PyReleaseValidation")
-	 os.system("scramv1 b")
+         os.chdir(self.basedir)
+         subprocess.check_call("scramv1 project CMSSW "+cmssw, shell=True)
+         os.chdir(self.basedir+"/"+cmssw+'/src')
+         subprocess.check_call("eval `scramv1 runtime -sh`", shell=True) ##REMEMBER: alias cmsenv='eval `scramv1 runtime -sh`'
+#         subprocess.check_call("cvs co DQM/Integration/scripts/harvesting_tools", shell=True)
+#         subprocess.check_call("cvs co -r 1.303 Configuration/PyReleaseValidation", shell=True)
+         subprocess.check_call("scramv1 b", shell=True)
 	 harvesting_area=self.basedir+"/"+cmssw+"/src/harvesting_area"
 	 os.makedirs(harvesting_area)
          os.chdir(harvesting_area)
 	 #Maybe later on this two steps are outdated and must be replaced by new symlinks to new files
 	 # Right now I keep them for consistency with old Harvesting code
-	 os.symlink(self.basedir+"/"+cmssw+"/src/DQM/Integration/scripts/harvesting_tools/cmsHarvester.py", "cmsHarvester.py")
-	 os.symlink(self.basedir+"/"+cmssw+"/src/DQM/Integration/scripts/harvesting_tools/check_harvesting.pl", "check_harvesting.pl")
+#	 os.symlink(self.basedir+"/"+cmssw+"/src/DQM/Integration/scripts/harvesting_tools/cmsHarvester.py", "cmsHarvester.py")
+#	 os.symlink(self.basedir+"/"+cmssw+"/src/DQM/Integration/scripts/harvesting_tools/check_harvesting.pl", "check_harvesting.pl")
 	 os.chdir(self.basedir)
 
 
@@ -109,16 +110,19 @@ class SetEnv:
          if (int(cmssw[6])<5):
 	    os.putenv("SCRAM_ARCH", "slc5_amd64_gcc434")
          elif (int(cmssw[6])>=5):
-	    os.putenv("SCRAM_ARCH", "slc5_amd64_gcc462")
+	    if (int(cmssw[8])==0):
+	        os.putenv("SCRAM_ARCH", "slc5_amd64_gcc434")   #for CMSSW_5_0_X
+	    elif (int(cmssw[8])>0):
+                os.putenv("SCRAM_ARCH", "slc5_amd64_gcc462")   #for CMSSW_5_1_X or later
 
          if (self.IsInstalled(self.basedir, cmssw) == False):
 	    print("Installing "+cmssw+" in "+self.basedir+"\n")
 	    self.InstallCMSSW(cmssw)
 	 
 	 os.chdir(self.basedir+"/"+cmssw+"/src")
-	 os.system("eval `scramv1 runtime -sh`")  ##REMEMBER: alias cmsenv='eval `scramv1 runtime -sh`'
+         subprocess.check_call("eval `scramv1 runtime -sh`", shell=True) ##REMEMBER: alias cmsenv='eval `scramv1 runtime -sh`'
 	 os.system("scramv1 b")
-	 os.system("export VO_CMS_SW_DIR="+self.cmsdir+"/sw")
-	 os.system("eval `scramv1 runtime -sh` ")
+	 os.putenv("VO_CMS_SW_DIR", self.cmsdir+"/sw")
+         subprocess.check_call("eval `scramv1 runtime -sh`", shell=True) ##REMEMBER: alias cmsenv='eval `scramv1 runtime -sh`'
 	 os.chdir(self.basedir+"/"+cmssw+"/src/harvesting_area")
 
