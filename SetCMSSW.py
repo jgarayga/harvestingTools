@@ -65,12 +65,13 @@ class SetEnv:
 
 	 if os.path.exists(thisdir+'/'+cmssw):
 	    print(cmssw+" is installed in "+thisdir+"\n")
-	    if os.path.exists(thisdir+'/'+cmssw+'/src/DQM/Integration'):
-	        print("DQM/Integration is installed in "+thisdir+"\n")
-	        return 1
-	    elif not os.path.isdir(thisdir+"/"+cmssw+"/src/DQM/Integration"):
-		print ("DQM/Integration is not installed in "+thisdir+"/"+cmssw+"/src/DQM/Integration\n")
-		return 0
+	    return 1
+	    #if os.path.exists(thisdir+'/'+cmssw+'/src/DQM/Integration'):
+	        #print("DQM/Integration is installed in "+thisdir+"\n")
+	        #return 1
+	    #elif not os.path.isdir(thisdir+"/"+cmssw+"/src/DQM/Integration"):
+		#print ("DQM/Integration is not installed in "+thisdir+"/"+cmssw+"/src/DQM/Integration\n")
+		#return 0
 	 elif not os.path.isdir(thisdir+'/'+cmssw):
 	    print(cmssw+" is not installed in "+thisdir+"\n")
 	    return 0
