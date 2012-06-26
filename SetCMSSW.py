@@ -89,7 +89,7 @@ class SetEnv:
 #         subprocess.check_call("cvs co DQM/Integration/scripts/harvesting_tools", shell=True)
 #         subprocess.check_call("cvs co -r 1.303 Configuration/PyReleaseValidation", shell=True)
          subprocess.check_call("scramv1 b", shell=True)
-	 harvesting_area=self.basedir+"/"+cmssw+"/src/harvesting_area"
+	 harvesting_area=self.basedir+"/"+cmssw+"/harvesting_area"
 	 os.makedirs(harvesting_area)
          os.chdir(harvesting_area)
 	 #Maybe later on this two steps are outdated and must be replaced by new symlinks to new files
@@ -124,5 +124,5 @@ class SetEnv:
 	 os.system("scramv1 b")
 	 os.putenv("VO_CMS_SW_DIR", self.cmsdir+"/sw")
          subprocess.check_call("eval `scramv1 runtime -sh`", shell=True) ##REMEMBER: alias cmsenv='eval `scramv1 runtime -sh`'
-	 os.chdir(self.basedir+"/"+cmssw+"/src/harvesting_area")
+	 os.chdir(self.basedir+"/"+cmssw+"/harvesting_area")
 

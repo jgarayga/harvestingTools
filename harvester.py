@@ -236,7 +236,7 @@ class CMSHarvester(object):
         self.cmsswcfg = cmsswCFG()
         
         for DataSetRelease in range(len(DSs)):
-            self.setcmssw.SetCMSSW(DataSetRelease)
+            self.setcmssw.SetCMSSW(DSs[DataSetRelease].release)
             for DataName in range(len(DSs)):
                 self.create_cmssw_cfg(self.cmsswcfg.create_cmsDriver_query(DSs[DataName], self.SR_filepath))
                 #for RunNumber in range(len(DSs)):
