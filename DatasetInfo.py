@@ -8,12 +8,17 @@ class DatasetInfo:
         self.release=""
         self.tag=""
         self.runs=[]
+        self.nevents=""
         self.castor_basepath=""
         
     def castor_check(self, run):
         path=self.create_path(run)
-        if (rfstat_item(path, "Size") > 0):
-            return True
+        size=rfstat_item(path, "Size")
+        if (size > 0):
+            if (int(size)>0):
+                return True
+            else:
+                return False
         else:
             return False
         

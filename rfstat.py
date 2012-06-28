@@ -11,7 +11,7 @@ def rfstat(filename):
     ##if not envutil.find_executable(statcmd):
     ##    raise RFIOError( '%s not found in PATH' % statcmd )
     cmd = '%s %s' % (statcmd,_remove_prefix(filename,'rfio:'))
-    status,output = commands.getstatusoutput( cmd )
+    status,output = commands.getstatusoutput( cmd )    
     status >>= 8
 
     return (status, output.split(os.linesep))

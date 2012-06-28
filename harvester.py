@@ -11,6 +11,7 @@ import datetime
 import copy
 from inspect import getargspec
 from random import choice
+import subprocess
 
 from DBSUtilities import *
 from Bookkeeping import *
@@ -19,6 +20,7 @@ from CMSHarvesterHelpFormatter import *
 from SetCMSSW import *
 from Configuration.PyReleaseValidation.cmsDriverOptions import OptionsFromCommand
 from CMSSWcfg import *
+from CRAB import *
 
 ###########################################################################
 
@@ -67,7 +69,7 @@ class CMSHarvester(object):
         self.bookkeeping_file="harvesting_bookkeeping.txt"
         
         self.castor_basepath="/castor/cern.ch/cms/store/temp/dqm/offline/harvesting_output/TEST"
-
+        
     def parse_cmd_line_options(self):
 
         # Set up the command line parser. Note that we fix up the help
@@ -139,12 +141,20 @@ class CMSHarvester(object):
                           dest="SR_filepath",
                           default="",
                           type="str")
+
+        parser.add_option("", "--CMSSWbasedir",
+                          help="path to dir containing all CMSSW release",
+                          action="store",
+                          dest="CMSSWbasedir",
+                          default="/afs/cern.ch/user/f/fcostanz/HarvArea/fcostanz_TEST",
+                          type="str")
                           
 	parser.set_defaults()
 	(self.options, self.args) = parser.parse_args(self.cmd_line_opts)
         
         self.site=self.options.site
         self.SR_filepath=self.options.SR_filepath
+        self.CMSSWbasedir=self.options.CMSSWbasedir
 	
     #def dataset_veto(self):
         
@@ -154,6 +164,16 @@ class CMSHarvester(object):
 
     def option_handler_create_date(self, option, opt_str, value, parser):
         self.create_date=value
+
+    def lock(self):
+        if os.path.exists(sys.path[0]+'/harvester.lock'):
+            return 1
+        f = open(sys.path[0]+'/harvester.lock', 'w')
+        f.close()
+
+    def cleaning(self):
+        subprocess.check_call("rm -rf "+self.CMSSWbasedir+"/CMSSW*/harvesting_area/*", shell=True)
+        print "Cleaning done."
 
     def dbs_skim( self, dic):
         for i in range(len(dic["dataset"])-1, -1, -1):
@@ -184,6 +204,8 @@ class CMSHarvester(object):
                     ds.runs.append(int(run))
             else:
                 ds.runs=[1]
+                query = "find file.numevents where dataset="+dic["dataset"][i]+" and file.numevents >0 and site="+self.site
+                ds.nevents=self.dbs_api.send_query(query)["file.numevents"][0]
                 
             DS.append(ds)
         return DS
@@ -194,6 +216,15 @@ class CMSHarvester(object):
         self.bookkeeping.load()
         self.bookkeeping.compare(DS)
         self.bookkeeping.dump()
+
+    def order_by_release(self, DSs):
+        orderedMap={}
+        for ds in DSs:
+            if not(ds.release in orderedMap.keys()):
+                orderedMap[ds.release]=[]
+            orderedMap[ds.release].append(ds)    
+        return orderedMap
+        
     
     def mc_run_check(self, ds):
         query = "find run where dataset="+ds.name+" and file.numevents >0"
@@ -215,44 +246,95 @@ class CMSHarvester(object):
         
         print cmsDriverQuery
         subprocess.check_call(cmsDriverQuery, shell=True);
-        
 
+    def create_script(self, release):
+
+        tmp = []
+        
+        tmp.append("#!/bin/zsh")
+        tmp.append("")
+
+        tmp.append(". /afs/cern.ch/cms/cmsset_default.sh")
+        tmp.append("source /afs/cern.ch/cms/LCG/LCG-2/UI/cms_ui_env.sh")
+        tmp.append("")
+
+        tmp.append("source /afs/cern.ch/cms/ccs/wm/scripts/Crab/crab.sh")
+        tmp.append("")
+
+        tmp.append("export X509_USER_PROXY=$HOME/x509up")
+        tmp.append("")
+
+        tmp.append("crab -create -submit")
+        
+        script = "\n".join(tmp)
+
+        return script
+      
+    def create_castor_dirs(self, DS):
+        
+        for run in DS.runs:            
+            path=DS.create_path(run)
+            subprocess.check_call("nsmkdir -m 775 -p "+path, shell=True)
+            while(path != self.castor_basepath):
+                path=path[:path.rfind("/")]
+                subprocess.check_call("nschmod 775 "+path, shell=True)
+
+              
     def run(self):
         "Main entry point of the CMS harvester."
         
         self.parse_cmd_line_options()
-	
-	self.setcmssw = SetEnv()
+
+        if self.lock():
+            print "Harvester still running."
+            print "Remove the lock file 'harvesting.lock' if the job crashed"
+            return
+        #self.cleaning()
 
         self.dbs_api=DBS()
         query = "find dataset, release, dataset.tag, datatype where dataset="+self.dataset_name
         query = query+" and file.numevents >0 and site="+self.site+" and dataset.createdate > "+self.create_date
-        print query
         dic=self.dbs_api.send_query(query)
 
-        DSs=self.DS_list(dic)
-        
+        DSs=self.DS_list(dic)        
         self.bookkeep(DSs)
+
+        orderedDSs=self.order_by_release(DSs)        	
+	self.setcmssw = SetEnv()
         self.cmsswcfg = cmsswCFG()
+        self.crab_cfg=crab_config(self.site)
+
+        for release in orderedDSs.keys():
+            self.setcmssw.setUI()
+            self.setcmssw.SetCMSSW(release)
+
+            #script = open("script.sh","w")
+            #script.write(self.create_script(release))
+            #script.close()
+            #subprocess.check_call("chmod +x script.sh",shell=True)
+            
+            for ds in orderedDSs[release]:
+                self.create_cmssw_cfg(self.cmsswcfg.create_cmsDriver_query( ds, self.SR_filepath))
+                self.crab_cfg.set_DS(ds)
+                self.create_castor_dirs(ds)
+                for run in ds.runs:
+                    crab_file = open("crab.cfg","w")
+                    crab_file.write(self.crab_cfg.create_crab_config(run))
+                    crab_file.close()
+                    subprocess.check_call("crab -create -submit", shell=True);
+                    #subprocess.check_call(self.CMSSWbasedir+"/"+release+"/harvesting_area/script.sh", stdout=sys.stdout, stderr=sys.stderr, shell=True);
+                    
+        os.remove(sys.path[0]+"/harvester.lock")
         
-        for DataSetRelease in range(len(DSs)):
-            self.setcmssw.SetCMSSW(DSs[DataSetRelease].release)
-            for DataName in range(len(DSs)):
-                self.create_cmssw_cfg(self.cmsswcfg.create_cmsDriver_query(DSs[DataName], self.SR_filepath))
-                #for RunNumber in range(len(DSs)):
-                #add here the crab CFG creator and submitter!!
-                #self.create_crab_cfg(DS)
-	
-	#self.create_batch_script(DS)
-        #self.execute()
     
 ###########################################################################
 ## Main entry point.
 ###########################################################################
 
 if __name__ == "__main__":
+    
     "Main entry point for harvesting."
-
+    
     CMSHarvester().run()
 
     # Done.

@@ -12,15 +12,15 @@ class SetEnv:
          
 	 self.cmsdir ="/afs/cern.ch/cms"
          #later on this 'basedir' should be rewrite to the corerct /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting/bin
-	 self.basedir="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting/iasincru_TEST"
+	 self.basedir="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting/fcostanz_TEST"
      
      
      def SourceFile(self, file):
      
          ''' Function to SourceFiles as it would be done via command line'''
-     
+
          if (os.path.isfile(file) == True):
-            os.system("source "+file)
+            subprocess.check_call("source "+file,shell=True)
 	    return 1
          else:
 	    print("\nFile "+file+" does NOT exist. Exiting!!")
@@ -39,7 +39,7 @@ class SetEnv:
 	 
 	 print('Setting up the UI, CRAB, DBS enviroments...')
 	 
-         self.SourceFile(cms)
+         #self.SourceFile(cms)
 	 #print("Sourced: "+cms)
 	 self.SourceFile(crab)
 	 #print("Sourced: "+crab)
