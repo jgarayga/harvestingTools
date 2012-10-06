@@ -9,11 +9,16 @@ class DatasetInfo:
         self.tag=""
         self.runs=[]
         self.nevents=""
-        self.castor_basepath=""
+        self.castor_basepath=""   ##this has to be modified to include the base castor directory!!
         
     def castor_check(self, run):
         path=self.create_path(run)
-        size=rfstat_item(path, "Size")
+        try:
+            size=rfstat_item(path, "Size") #rfstat_item: funciton from rfstat module to get all properties of a certain CASTOR file 
+        except:
+            print "Couldn't check the existence of the file in CASTOR because: server not responding, wrong path, ..."
+            print "Exiting."
+            return False
         if (size > 0):
             if (int(size)>0):
                 return True
