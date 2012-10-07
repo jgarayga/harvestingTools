@@ -2,12 +2,11 @@ import optparse
 from harvester import twiki_url, __author__, __version__
 
 class CMSHarvesterHelpFormatter(optparse.IndentedHelpFormatter):
-    """Helper class to add some customised help output to cmsHarvester.
 
-    We want to add some instructions, as well as a pointer to the CMS
-    Twiki.
-
-    """
+    '''
+       Helper class to add some customised help output to cmsHarvester.
+       We want to add some instructions, as well as a pointer to the CMS Twiki.
+    '''
 
     def format_usage(self, usage):
 
