@@ -13,7 +13,7 @@ class SetEnv:
          
         self.cmsdir ="/afs/cern.ch/cms"
         #later on, this 'basedir' should be rewrite to the corerct /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting/bin
-	self.basedir="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting/fcostanz_TEST"
+	self.basedir="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting/iasincru_TEST"
      
      
     def SourceFile(self, file):
@@ -33,9 +33,9 @@ class SetEnv:
 
     def setUI(self):
      
-        cms   = self.cmsdir+"/cmsset_default.sh"
+        #cms   = self.cmsdir+"/cmsset_default.sh"
+        cmsui = self.cmsdir+"/LCG/LCG-2/UI/cms_ui_env.sh"
         crab  = self.cmsdir+"/ccs/wm/scripts/Crab/crab.sh"
-	cmsui = self.cmsdir+"/LCG/LCG-2/UI/cms_ui_env.sh"
         setup = self.cmsdir+"/caf/setup.sh"
 	 
         print('Setting up the UI, CRAB, DBS enviroments...')
@@ -55,12 +55,14 @@ class SetEnv:
 
 	'''
             Function that checks if CMSSW_X_Y_Z 'cmssw' is installed in 'thisdir'.
+            And if 'CMSSW_X_Y_Z/harvesting_area' exists in 'thisdir'
 	'''
 
-	if os.path.exists(thisdir+'/'+cmssw):
+	WorkDir = thisdir+"/"+cmssw
+	if os.path.exists(WorkDir) and os.path.exists(WorkDir+"/harvesting_area"):
             print(cmssw+" is installed in "+thisdir+"\n")
 	    return 1
-	elif not os.path.isdir(thisdir+'/'+cmssw):
+	elif not os.path.isdir(WorkDir):
 	    print(cmssw+" is not installed in "+thisdir+"\n")
 	    return 0
 
@@ -98,7 +100,7 @@ class SetEnv:
 	    elif (int(cmssw[8])>0):
                 os.putenv("SCRAM_ARCH", "slc5_amd64_gcc462")   #for CMSSW_5_1_X or later
 
-        if (self.IsInstalled(self.basedir, cmssw) == False):
+        if not self.IsInstalled(self.basedir, cmssw):
 	    print("Installing "+cmssw+" in "+self.basedir+"\n")
 	    self.InstallCMSSW(cmssw)
 
