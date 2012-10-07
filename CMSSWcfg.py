@@ -72,7 +72,7 @@ class cmsswCFG:
          
          return cmsDriverString
          
-     def create_cmsDriver_query_for_SpecialRequest(self, dataset, SR_filepath):
+    def create_cmsDriver_query_for_SpecialRequest(self, dataset, SR_filepath):
          
          '''
          Read the special request cmsDriver command from file for Speacial Requests

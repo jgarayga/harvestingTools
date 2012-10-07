@@ -31,7 +31,7 @@ class SetEnv:
 
 
 
-     def setUI(self):
+    def setUI(self):
      
         cms   = self.cmsdir+"/cmsset_default.sh"
         crab  = self.cmsdir+"/ccs/wm/scripts/Crab/crab.sh"
