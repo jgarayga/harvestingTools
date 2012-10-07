@@ -29,6 +29,8 @@ class DBS:
             self.APIoutput = self.api.executeQuery(query)	
         except DBSAPI.dbsApiException.DbsApiException, ex:
             print "Caught DBS exception:",ex.getErrorMessage()
+            print "\n\n** Remember: if error is due to 'time' or 'too long to execute' reduce the dataset.createdate option"
+            print "                 if the error is due to 'syntax' or 'Invalid Token' recheck your query"
         self.keys=self.keys_from_query(query)
         return self.XMLHandler()
     ## End of send_query
