@@ -1,4 +1,4 @@
-class cmsswCFG:
+class CMSSWcfg:
     
     ''' Class to create CMSSW config file using cmsDriver.py command '''
 
