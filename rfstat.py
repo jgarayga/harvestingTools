@@ -5,8 +5,11 @@ def _remove_prefix(filename,prefix):
     return filename
 
 def rfstat(filename):
-    """Return tuple (status,output) of rfstat shell command. Output is a list of strings
-    (one entry per line). Raises RFIOError if rfstat command is not found."""
+
+    '''
+        Return tuple (status,output) of rfstat shell command. Output is a list of strings
+        (one entry per line). Raises RFIOError if rfstat command is not found.
+    '''
     statcmd = 'rfstat'
     ##if not envutil.find_executable(statcmd):
     ##    raise RFIOError( '%s not found in PATH' % statcmd )
@@ -17,7 +20,11 @@ def rfstat(filename):
     return (status, output.split(os.linesep))
 
 def rfstat_item(filename,item):
-    """Return the contents of <item> in the rfstat output"""
+
+    '''
+        Return the contents of <item> in the rfstat output
+    '''
+
     status,output = rfstat(filename)
     if status: return None
     for line in output:
