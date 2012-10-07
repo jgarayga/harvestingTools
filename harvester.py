@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 
 import os
@@ -15,7 +14,7 @@ import subprocess
 
 from DBSUtilities import *
 from Bookkeeping import *
-from rfstat import *
+from rfstat import *  ##not used at all, can be removed??
 from CMSHarvesterHelpFormatter import *
 from SetCMSSW import *
 from Configuration.PyReleaseValidation.cmsDriverOptions import OptionsFromCommand
@@ -27,7 +26,10 @@ from CRAB import *
 ## Based on previous code cmsHarvester.py by Jeroen Hegeman (jeroen.hegeman@cern.ch)
 
 __version__ = "0.0"
-__author__ = "Francesco Costanza (francesco.costanza@desy.de)"
+__author__ = "Francesco Costanza (francesco.costanza@desy.de) and Ivan Asin (ivan.asin.cruz@desy.de)"
+
+##Maybe in the cron job can be set up to run an specific shell type (bash) executing: bash. This way we will be
+## safe against possible shell incompatibilities
 
 twiki_url = "https://twiki.cern.ch/twiki/bin/view/CMS/CmsHarvester"
 
@@ -73,63 +75,62 @@ class CMSHarvester(object):
     def parse_cmd_line_options(self):
 
         # Set up the command line parser. Note that we fix up the help
-	# formatter so that we can add some text pointing people to
-	# the Twiki etc.
-	parser = optparse.OptionParser(version="%s %s" % \
-				       ("%prog", self.version),
-				       formatter=CMSHarvesterHelpFormatter())
-	self.option_parser = parser
+        # formatter so that we can add some text pointing people to
+        # the Twiki etc.
+        parser = optparse.OptionParser(version="%s %s" % \
+                                      ("%prog", self.version),
+                                      formatter=CMSHarvesterHelpFormatter())
+        self.option_parser = parser
 
-	# Option to specify the name (or a regexp) of the dataset(s)
-	# to be used.
-	parser.add_option("", "--dataset",
-			  help="Name (or regexp) of dataset(s) to process",
-			  action="callback",
-			  callback=self.option_handler_input_spec,
-			  type="string",
-			  metavar="DATASET")
-	
-        '''       # Option to specify the name (or a regexp) of the dataset(s)
-        # to be ignored.
-        parser.add_option("", "--dataset-ignore",
-                          help="Name (or regexp) of dataset(s) to ignore",
-                          action="callback",
-                          callback=self.option_handler_input_spec,
-                          type="string",
-                          metavar="DATASET-IGNORE")
+        # Option to specify the name (or a regexp) of the dataset(s) to be used.
+        parser.add_option("", "--dataset",
+                           help="Name (or regexp) of dataset(s) to process",
+                           action="callback",
+                           callback=self.option_handler_input_spec,
+                           type="string",
+                           metavar="DATASET")
 
-        # Option to specify the name (or a regexp) of the run(s)
-        # to be used.
-        parser.add_option("", "--runs",
-                          help="Run number(s) to process",
-                          action="callback",
-                          callback=self.option_handler_input_spec,
-                          type="string",
-                          metavar="RUNS")                   
-	
-        # Option to specify the name (or a regexp) of the run(s)
-        # to be ignored.
-        parser.add_option("", "--runs-ignore",
-                          help="Run number(s) to ignore",
-                          action="callback",
-                          callback=self.option_handler_input_spec,
-                          type="string",
-                          metavar="RUNS-IGNORE")'''
+        # Option to specify the name (or a regexp) of the dataset(s)
+        #to be ignored.
+        #parser.add_option("", "--dataset-ignore",
+                          #help="Name (or regexp) of dataset(s) to ignore",
+                          #action="callback",
+                          #callback=self.option_handler_input_spec,
+                          #type="string",
+                          #metavar="DATASET-IGNORE")
+
+        #Option to specify the name (or a regexp) of the run(s)
+        #to be used.
+        #parser.add_option("", "--runs",
+                          #help="Run number(s) to process",
+                          #action="callback",
+                          #callback=self.option_handler_input_spec,
+                          #type="string",
+                          #metavar="RUNS")
+
+        #Option to specify the name (or a regexp) of the run(s)
+        #to be ignored.
+        #parser.add_option("", "--runs-ignore",
+                          #help="Run number(s) to ignore",
+                          #action="callback",
+                          #callback=self.option_handler_input_spec,
+                          #type="string",
+                          #metavar="RUNS-IGNORE")
 
         # Option to specify the creation date of dataset of the dataset(s)
-	# to be used.
-	parser.add_option("", "--create_date",
-			  help="creation date of dataset(s) to process YYYY-MM-DD",
+        # to be used.
+        parser.add_option("", "--create_date",
+                          help="creation date of dataset(s) to process YYYY-MM-DD",
                           action="callback",
-			  callback=self.option_handler_create_date,
+                          callback=self.option_handler_create_date,
                           type="string" )
 
         # Option to specify the site to be used.
-	parser.add_option("", "--site",
-			  help="site where the harvesting has to be run",
+        parser.add_option("", "--site",
+                          help="site where the harvesting has to be run",
                           action="store",
-			  dest="site",
-			  default="srm-eoscms.cern.ch",
+                          dest="site",
+                          default="srm-eoscms.cern.ch",
                           type="string" )
 
         # Options to specify special request input file.
@@ -148,16 +149,16 @@ class CMSHarvester(object):
                           dest="CMSSWbasedir",
                           default="/afs/cern.ch/user/f/fcostanz/HarvArea/fcostanz_TEST",
                           type="str")
-                          
-	parser.set_defaults()
-	(self.options, self.args) = parser.parse_args(self.cmd_line_opts)
-        
+
+        parser.set_defaults()
+        (self.options, self.args) = parser.parse_args(self.cmd_line_opts)
+
         self.site=self.options.site
         self.SR_filepath=self.options.SR_filepath
         self.CMSSWbasedir=self.options.CMSSWbasedir
-	
+
     #def dataset_veto(self):
-        
+
 
     def option_handler_input_spec(self, option, opt_str, value, parser):
         self.dataset_name=value
@@ -183,10 +184,10 @@ class CMSHarvester(object):
                     dic["datatype"].pop(i)
                     dic["release"].pop(i)
                     dic["dataset.tag"].pop(i)
-                    continue             
+                    continue
         return dic
     ## End of dbs_skim
-    
+
     def DS_list( self, dic):
         dic=self.dbs_skim(dic)
         DS=[]
@@ -206,7 +207,7 @@ class CMSHarvester(object):
                 ds.runs=[1]
                 query = "find file.numevents where dataset="+dic["dataset"][i]+" and file.numevents >0 and site="+self.site
                 ds.nevents=self.dbs_api.send_query(query)["file.numevents"][0]
-                
+
             DS.append(ds)
         return DS
     ## End of ds_list
@@ -218,15 +219,25 @@ class CMSHarvester(object):
         self.bookkeeping.dump()
 
     def order_by_release(self, DSs):
+        
+        '''
+            Order the datasets needed to harvest as a function of the CMSSW_X_Y_Z release
+        '''
         orderedMap={}
         for ds in DSs:
             if not(ds.release in orderedMap.keys()):
                 orderedMap[ds.release]=[]
-            orderedMap[ds.release].append(ds)    
+            orderedMap[ds.release].append(ds)
         return orderedMap
-        
-    
+
+
     def mc_run_check(self, ds):
+
+        '''
+            Checks if the MC sample contains 1 or more runs.
+            MC samples CAN only have 1 run, if nr. runs>1 something is wrong
+        '''
+
         query = "find run where dataset="+ds.name+" and file.numevents >0"
         dbs_result = dbs_query(self.dbs_api,query)
         keys=["run"]
@@ -238,51 +249,53 @@ class CMSHarvester(object):
             return True
 
     def create_cmssw_cfg(self, cmsDriverQuery):
-        
+
         '''
            Create the CMSSW configuration file using cmsDriver.py command.
            Takes as input the cmsDriver.py command, including the possible customizations.
         '''
-        
+
         print cmsDriverQuery
         subprocess.check_call(cmsDriverQuery, shell=True);
 
     def create_script(self, release):
 
         tmp = []
-        
+
         tmp.append("#!/bin/zsh")
         tmp.append("")
-
         tmp.append(". /afs/cern.ch/cms/cmsset_default.sh")
         tmp.append("source /afs/cern.ch/cms/LCG/LCG-2/UI/cms_ui_env.sh")
         tmp.append("")
-
         tmp.append("source /afs/cern.ch/cms/ccs/wm/scripts/Crab/crab.sh")
         tmp.append("")
-
         tmp.append("export X509_USER_PROXY=$HOME/x509up")
         tmp.append("")
-
         tmp.append("crab -create -submit")
-        
+
         script = "\n".join(tmp)
 
         return script
-      
+
     def create_castor_dirs(self, DS):
+
+        '''
+        Create CASTOR directories where output ROOT files will be stored.
+        '''
         
-        for run in DS.runs:            
+        for run in DS.runs:
             path=DS.create_path(run)
             subprocess.check_call("nsmkdir -m 775 -p "+path, shell=True)
             while(path != self.castor_basepath):
                 path=path[:path.rfind("/")]
                 subprocess.check_call("nschmod 775 "+path, shell=True)
 
-              
     def run(self):
-        "Main entry point of the CMS harvester."
         
+        '''
+            Main entry point of the CMS harvester.
+        '''
+
         self.parse_cmd_line_options()
 
         if self.lock():
@@ -296,11 +309,11 @@ class CMSHarvester(object):
         query = query+" and file.numevents >0 and site="+self.site+" and dataset.createdate > "+self.create_date
         dic=self.dbs_api.send_query(query)
 
-        DSs=self.DS_list(dic)        
+        DSs=self.DS_list(dic)
         self.bookkeep(DSs)
 
-        orderedDSs=self.order_by_release(DSs)        	
-	self.setcmssw = SetEnv()
+        orderedDSs=self.order_by_release(DSs)
+        self.setcmssw = SetEnv()
         self.cmsswcfg = cmsswCFG()
         self.crab_cfg=crab_config(self.site)
 
@@ -312,9 +325,9 @@ class CMSHarvester(object):
             #script.write(self.create_script(release))
             #script.close()
             #subprocess.check_call("chmod +x script.sh",shell=True)
-            
+
             for ds in orderedDSs[release]:
-                self.create_cmssw_cfg(self.cmsswcfg.create_cmsDriver_query( ds, self.SR_filepath))
+                self.create_cmssw_cfg(self.cmsswcfg.create_cmsDriver_query(ds, self.SR_filepath))
                 self.crab_cfg.set_DS(ds)
                 self.create_castor_dirs(ds)
                 for run in ds.runs:
@@ -323,10 +336,10 @@ class CMSHarvester(object):
                     crab_file.close()
                     subprocess.check_call("crab -create -submit", shell=True);
                     #subprocess.check_call(self.CMSSWbasedir+"/"+release+"/harvesting_area/script.sh", stdout=sys.stdout, stderr=sys.stderr, shell=True);
-                    
+
         os.remove(sys.path[0]+"/harvester.lock")
-        
-    
+
+
 ###########################################################################
 ## Main entry point.
 ###########################################################################
