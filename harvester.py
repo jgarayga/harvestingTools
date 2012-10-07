@@ -70,7 +70,8 @@ class CMSHarvester(object):
         
         self.bookkeeping_file="harvesting_bookkeeping.txt"
         
-        self.castor_basepath="/castor/cern.ch/cms/store/temp/dqm/offline/harvesting_output/TEST"
+        #self.castor_basepath="/castor/cern.ch/cms/store/temp/dqm/offline/harvesting_output/TEST"
+        self.castor_basepath="/castor/cern.ch/user/i/iasincru/test"
         
     def parse_cmd_line_options(self):
 
@@ -147,7 +148,7 @@ class CMSHarvester(object):
                           help="path to dir containing all CMSSW release",
                           action="store",
                           dest="CMSSWbasedir",
-                          default="/afs/cern.ch/user/f/fcostanz/HarvArea/fcostanz_TEST",
+                          default="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting/iasincru_TEST",
                           type="str")
 
         parser.set_defaults()
@@ -302,7 +303,7 @@ class CMSHarvester(object):
             print "Harvester still running."
             print "Remove the lock file 'harvesting.lock' if the job crashed"
             return
-        #self.cleaning()
+        self.cleaning()
 
         self.dbs_api=DBS()
         query = "find dataset, release, dataset.tag, datatype where dataset="+self.dataset_name
@@ -314,7 +315,7 @@ class CMSHarvester(object):
 
         orderedDSs=self.order_by_release(DSs)
         self.setcmssw = SetEnv()
-        self.cmsswcfg = cmsswCFG()
+        self.cmsswcfg = CMSSWcfg()
         self.crab_cfg=crab_config(self.site)
 
         for release in orderedDSs.keys():
