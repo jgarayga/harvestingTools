@@ -10,14 +10,16 @@ class DatasetInfo:
         self.runs=[]
         self.nevents=""
         self.castor_basepath=""
-        
+
     def castor_check(self, run):
         path=self.create_path(run)
+        size=0
         try:
-            size=rfstat_item(path, "Size") #rfstat_item: rfstat module function to get all properties of a certain CASTOR file
-        except:
-            print "Couldn't check the existence of the file in CASTOR because: server not responding, wrong path, ..."
-            print "Exiting."
+            size=rfstat_item(path, "Size")
+        except BaseException, error:
+            print "\n ERORR in DatasetInfo.py"
+            print "Couldn't check the existence of the file in EOS for "+path
+            print "Exiting!. With error: "+error.__str__()
             return False
         if (size > 0):
             if (int(size)>0):
@@ -26,7 +28,7 @@ class DatasetInfo:
                 return False
         else:
             return False
-        
+
     def create_path(self, run):
         path=self.castor_basepath
         if (self.type == "mc"):
@@ -38,8 +40,5 @@ class DatasetInfo:
         path+="run_"+str(run)+"/"
         path+="nevents/"
         path+=self.name[1:].replace("/","__")+"_"+str(run).zfill(9)+"_site_01/"
-        cmd="nsls "+path
-        status, output= commands.getstatusoutput( cmd )
-        if (status == 0):
-            path+=output
-        return path
+
+        return str(path)

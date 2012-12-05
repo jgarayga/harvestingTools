@@ -12,6 +12,7 @@ from inspect import getargspec
 from random import choice
 import subprocess
 
+from subprocess import PIPE
 from DBSUtilities import *
 from Bookkeeping import *
 from rfstat import *  ##not used at all, can be removed??
@@ -53,8 +54,8 @@ class CMSHarvester(object):
 
         #default value command-line options
 	    
-        self.dataset_name="/WW_TuneZ2star_8TeV_pythia6_tauola/Summer12-PU_S7_START50_V15-v1/DQM"#"/*/*/DQM"
-        #self.dataset_name="/DYToEE_M_20_TuneZ2star_8TeV_pythia6/Summer12-PU_S7_START50_V15-v1/DQM"#"/*/*/DQM"
+        self.dataset_name="/*/*/DQM"
+        #self.dataset_name="/WW_TuneZ2star_8TeV_pythia6_tauola/Summer12-PU_S7_START50_V15-v1/DQM"#"/*/*/DQM"
         
         today=datetime.datetime.today()
         delta=datetime.timedelta(30)
@@ -70,8 +71,7 @@ class CMSHarvester(object):
         
         self.bookkeeping_file="harvesting_bookkeeping.txt"
         
-        #self.castor_basepath="/castor/cern.ch/cms/store/temp/dqm/offline/harvesting_output/TEST"
-        self.castor_basepath="/castor/cern.ch/user/i/iasincru/test"
+        self.castor_basepath="/eos/cms/store/group/comm_dqm/harvesting_output"
         
     def parse_cmd_line_options(self):
 
@@ -145,10 +145,10 @@ class CMSHarvester(object):
                           type="str")
 
         parser.add_option("", "--CMSSWbasedir",
-                          help="path to dir containing all CMSSW release",
+                          help="path to dir containing all CMSSW releases",
                           action="store",
                           dest="CMSSWbasedir",
-                          default="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting/iasincru_TEST",
+                          default="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting/",
                           type="str")
 
         parser.set_defaults()
@@ -256,8 +256,11 @@ class CMSHarvester(object):
            Takes as input the cmsDriver.py command, including the possible customizations.
         '''
 
-        print cmsDriverQuery
-        subprocess.check_call(cmsDriverQuery, shell=True);
+        try:
+            subprocess.check_call(cmsDriverQuery, shell=True);
+        except BaseException, error:
+            print "ERROR! (in harvester.py/create_cmssw_cfg)"
+            print error.__str__()
 
     def create_script(self, release):
 
@@ -278,46 +281,37 @@ class CMSHarvester(object):
 
         return script
 
-    def create_castor_dirs(self, DS):
-
-        '''
-        Create CASTOR directories where output ROOT files will be stored.
-        '''
-        
-        for run in DS.runs:
-            path=DS.create_path(run)
-            subprocess.check_call("nsmkdir -m 775 -p "+path, shell=True)
-            while(path != self.castor_basepath):
-                path=path[:path.rfind("/")]
-                subprocess.check_call("nschmod 775 "+path, shell=True)
 
     def run(self):
-        
+
         '''
             Main entry point of the CMS harvester.
         '''
 
         self.parse_cmd_line_options()
 
+        CurrentWorkingDir = os.getcwd()
+
         if self.lock():
             print "Harvester still running."
-            print "Remove the lock file 'harvesting.lock' if the job crashed"
+            print "Remove the lock file 'harvester.lock' if the job crashed"
             return
+        print "Starting cleaning"
         self.cleaning()
 
         self.dbs_api=DBS()
         query = "find dataset, release, dataset.tag, datatype where dataset="+self.dataset_name
         query = query+" and file.numevents >0 and site="+self.site+" and dataset.createdate > "+self.create_date
+        print "\nSending DBS query\n"
         dic=self.dbs_api.send_query(query)
 
         DSs=self.DS_list(dic)
+        
         self.bookkeep(DSs)
-
         orderedDSs=self.order_by_release(DSs)
         self.setcmssw = SetEnv()
-        self.cmsswcfg = CMSSWcfg()
+        self.cmsswcfg = CMSSWcfg(str(CurrentWorkingDir))
         self.crab_cfg=crab_config(self.site)
-
         for release in orderedDSs.keys():
             self.setcmssw.setUI()
             self.setcmssw.SetCMSSW(release)
@@ -329,12 +323,15 @@ class CMSHarvester(object):
 
             for ds in orderedDSs[release]:
                 self.create_cmssw_cfg(self.cmsswcfg.create_cmsDriver_query(ds, self.SR_filepath))
+                print "\nCMSSW cfg file created\n"
                 self.crab_cfg.set_DS(ds)
-                self.create_castor_dirs(ds)
+                print "\n Create CRAB cfg file\n"
+                #self.create_castor_dirs(ds)
                 for run in ds.runs:
                     crab_file = open("crab.cfg","w")
                     crab_file.write(self.crab_cfg.create_crab_config(run))
                     crab_file.close()
+                    print "CRAB creating and submitting for "+str(ds.name)+" and run "+str(run)
                     subprocess.check_call("crab -create -submit", shell=True);
                     #subprocess.check_call(self.CMSSWbasedir+"/"+release+"/harvesting_area/script.sh", stdout=sys.stdout, stderr=sys.stderr, shell=True);
 
