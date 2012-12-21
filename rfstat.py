@@ -25,7 +25,7 @@ def rfstat_item(dirname,item):
     '''
 
     if(item=="Size"):
-        element = 16  #file size
+        element = -5  #file size
     elif(item=="File"):
         element = -1  #file name
     else:
