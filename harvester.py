@@ -72,6 +72,7 @@ class CMSHarvester(object):
         self.bookkeeping_file="harvesting_bookkeeping.txt"
         
         self.castor_basepath="/eos/cms/store/group/comm_dqm/harvesting_output"
+        #self.castor_basepath="/eos/cms/store/group/comm_dqm/iasincru_TEST"
         
     def parse_cmd_line_options(self):
 
@@ -138,7 +139,7 @@ class CMSHarvester(object):
         # In case any special request is requested, save the cmsDriver.py command in a file and give the path
         # as input to the harvseter.py
         parser.add_option("", "--special_request",
-                          help="path to a file containing the special request cmsDriver command. Please format the file so there is a SINGLE line",
+                          help="path to a file containing the special request cmsDriver command. It must be placed in the same directory as 'harvester.py'. Please format the file so there is a SINGLE line",
                           action="store",
                           dest="SR_filepath",
                           default="",
@@ -148,6 +149,7 @@ class CMSHarvester(object):
                           help="path to dir containing all CMSSW releases",
                           action="store",
                           dest="CMSSWbasedir",
+                          #default="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting/iasincru_TEST/",
                           default="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting/",
                           type="str")
 
@@ -174,7 +176,8 @@ class CMSHarvester(object):
         f.close()
 
     def cleaning(self):
-        subprocess.check_call("rm -rf "+self.CMSSWbasedir+"/CMSSW*/harvesting_area/*", shell=True)
+        print "Start cleaning "+self.CMSSWbasedir+"CMSSW*/harvesting_area/*"
+        subprocess.check_call("rm -rf "+self.CMSSWbasedir+"CMSSW*/harvesting_area/*", shell=True)
         print "Cleaning done."
 
     def dbs_skim( self, dic):
@@ -268,14 +271,19 @@ class CMSHarvester(object):
 
         tmp.append("#!/bin/zsh")
         tmp.append("")
-        tmp.append(". /afs/cern.ch/cms/cmsset_default.sh")
-        tmp.append("source /afs/cern.ch/cms/LCG/LCG-2/UI/cms_ui_env.sh")
+        #tmp.append(". /afs/cern.ch/cms/cmsset_default.sh")
+        #tmp.append("source /afs/cern.ch/cms/LCG/LCG-2/UI/cms_ui_env.sh")
+        #tmp.append("")
+        #tmp.append("source /afs/cern.ch/cms/ccs/wm/scripts/Crab/crab.sh")
+        #tmp.append("")
+        #tmp.append("export X509_USER_PROXY=$HOME/x509up")
+        #tmp.append("")
+        tmp.append("cd "+self.CMSSWbasedir+release+"/src")
         tmp.append("")
-        tmp.append("source /afs/cern.ch/cms/ccs/wm/scripts/Crab/crab.sh")
+        tmp.append("eval `scramv1 runtime -sh`")
+        tmp.append("cd "+self.CMSSWbasedir+release+"/harvesting_area")
         tmp.append("")
-        tmp.append("export X509_USER_PROXY=$HOME/x509up")
-        tmp.append("")
-        tmp.append("crab -create -submit")
+        tmp.append("crab -create -submit -cfg crab.cfg")
 
         script = "\n".join(tmp)
 
@@ -296,14 +304,15 @@ class CMSHarvester(object):
             print "Harvester still running."
             print "Remove the lock file 'harvester.lock' if the job crashed"
             return
-        print "Starting cleaning"
         self.cleaning()
 
         self.dbs_api=DBS()
         query = "find dataset, release, dataset.tag, datatype where dataset="+self.dataset_name
         query = query+" and file.numevents >0 and site="+self.site+" and dataset.createdate > "+self.create_date
         print "\nSending DBS query\n"
+        print query
         dic=self.dbs_api.send_query(query)
+        print "\nDBS query obtained\n"
 
         DSs=self.DS_list(dic)
         
@@ -316,10 +325,10 @@ class CMSHarvester(object):
             self.setcmssw.setUI()
             self.setcmssw.SetCMSSW(release)
 
-            #script = open("script.sh","w")
-            #script.write(self.create_script(release))
-            #script.close()
-            #subprocess.check_call("chmod +x script.sh",shell=True)
+            script = open("script.sh","w")
+            script.write(self.create_script(release))
+            script.close()
+            subprocess.check_call("chmod +x script.sh",shell=True)
 
             for ds in orderedDSs[release]:
                 self.create_cmssw_cfg(self.cmsswcfg.create_cmsDriver_query(ds, self.SR_filepath))
@@ -332,9 +341,8 @@ class CMSHarvester(object):
                     crab_file.write(self.crab_cfg.create_crab_config(run))
                     crab_file.close()
                     print "CRAB creating and submitting for "+str(ds.name)+" and run "+str(run)
-                    subprocess.check_call("crab -create -submit", shell=True);
-                    #subprocess.check_call(self.CMSSWbasedir+"/"+release+"/harvesting_area/script.sh", stdout=sys.stdout, stderr=sys.stderr, shell=True);
-
+                    #subprocess.check_call("crab -create -submit", shell=True)
+                    subprocess.check_call(self.CMSSWbasedir+"/"+release+"/harvesting_area/script.sh", stdout=sys.stdout, stderr=sys.stderr, shell=True);
         os.remove(sys.path[0]+"/harvester.lock")
 
 
