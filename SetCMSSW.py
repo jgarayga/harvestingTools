@@ -11,8 +11,7 @@ class SetEnv:
     def __init__(self):
 
         self.cmsdir ="/afs/cern.ch/cms"
-        #later on, this 'basedir' should be rewrite to the corerct /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting/bin
-        self.basedir="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting/iasincru_TEST"
+        self.basedir="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting"
 
 
     def SourceFile(self, file):
