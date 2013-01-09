@@ -95,9 +95,9 @@ class SetEnv:
         if (int(cmssw[6])<5):
             os.putenv("SCRAM_ARCH", "slc5_amd64_gcc434")
         elif (int(cmssw[6])>=5):
-            if (int(cmssw[8])==0):
+            if (int(cmssw[6])==5 and int(cmssw[8])==0):
                 os.putenv("SCRAM_ARCH", "slc5_amd64_gcc434")   #for CMSSW_5_0_X
-            elif (int(cmssw[8])>0):
+            else:
                 os.putenv("SCRAM_ARCH", "slc5_amd64_gcc462")   #for CMSSW_5_1_X or later
 
         if not self.IsInstalled(self.basedir, cmssw):
