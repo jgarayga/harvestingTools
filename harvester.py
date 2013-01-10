@@ -300,6 +300,11 @@ class CMSHarvester(object):
 
         CurrentWorkingDir = os.getcwd()
 
+        starttime=datetime.datetime.today()
+        print "\n\n==================================================================================="
+        print starttime.strftime("Start Harvesting script at %Y-%m-%d %H:%M")
+        print "===================================================================================\n\n"
+        
         if self.lock():
             print "Harvester still running."
             print "Remove the lock file 'harvester.lock' if the job crashed"
@@ -334,7 +339,7 @@ class CMSHarvester(object):
                 self.create_cmssw_cfg(self.cmsswcfg.create_cmsDriver_query(ds, self.SR_filepath))
                 print "\nCMSSW cfg file created\n"
                 self.crab_cfg.set_DS(ds)
-                print "\n Create CRAB cfg file\n"
+                print "\nCRAB cfg file created\n"
                 #self.create_castor_dirs(ds)
                 for run in ds.runs:
                     crab_file = open("crab.cfg","w")
@@ -345,6 +350,10 @@ class CMSHarvester(object):
                     subprocess.check_call(self.CMSSWbasedir+"/"+release+"/harvesting_area/script.sh", stdout=sys.stdout, stderr=sys.stderr, shell=True);
         os.remove(sys.path[0]+"/harvester.lock")
 
+        endtime=datetime.datetime.today()
+        print "\n\n==================================================================================="
+        print endtime.strftime("End Harvesting script at %Y-%m-%d %H:%M")
+        print "===================================================================================\n\n"
 
 ###########################################################################
 ## Main entry point.
