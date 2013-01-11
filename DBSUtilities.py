@@ -63,6 +63,13 @@ class DBS:
                 xml.sax.parseString(self.APIoutput, handler)
             except SAXParseException:
                 print "ERROR: Could not parse DBS server output"
-            self.results[key]=handler.results.values()[0]
+
+            #Check if DBS returns something for a dataset
+            try:
+                self.results[key]=handler.results.values()[0]
+            except IndexError:
+                print "Dataset with no results in DBS"
+                self.results[key]=""
+
         return self.results
     ## End of XMLHandler
