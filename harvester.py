@@ -72,8 +72,7 @@ class CMSHarvester(object):
         self.bookkeeping_file="harvesting_bookkeeping.txt"
         
         self.castor_basepath="/eos/cms/store/group/comm_dqm/harvesting_output"
-        #self.castor_basepath="/eos/cms/store/group/comm_dqm/iasincru_TEST"
-        
+
     def parse_cmd_line_options(self):
 
         # Set up the command line parser. Note that we fix up the help
@@ -149,7 +148,6 @@ class CMSHarvester(object):
                           help="path to dir containing all CMSSW releases",
                           action="store",
                           dest="CMSSWbasedir",
-                          #default="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting/iasincru_TEST/",
                           default="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting/",
                           type="str")
 
@@ -176,8 +174,8 @@ class CMSHarvester(object):
         f.close()
 
     def cleaning(self):
-        print "Start cleaning "+self.CMSSWbasedir+"CMSSW*/harvesting_area/*"
-        subprocess.check_call("rm -rf "+self.CMSSWbasedir+"CMSSW*/harvesting_area/*", shell=True)
+        print "Start cleaning "+self.CMSSWbasedir+"/CMSSW*/harvesting_area/*"
+        subprocess.check_call("rm -rf "+self.CMSSWbasedir+"/CMSSW*/harvesting_area/*", shell=True)
         print "Cleaning done."
 
     def dbs_skim( self, dic):
@@ -271,17 +269,10 @@ class CMSHarvester(object):
 
         tmp.append("#!/bin/zsh")
         tmp.append("")
-        #tmp.append(". /afs/cern.ch/cms/cmsset_default.sh")
-        #tmp.append("source /afs/cern.ch/cms/LCG/LCG-2/UI/cms_ui_env.sh")
-        #tmp.append("")
-        #tmp.append("source /afs/cern.ch/cms/ccs/wm/scripts/Crab/crab.sh")
-        #tmp.append("")
-        #tmp.append("export X509_USER_PROXY=$HOME/x509up")
-        #tmp.append("")
-        tmp.append("cd "+self.CMSSWbasedir+release+"/src")
+        tmp.append("cd "+self.CMSSWbasedir+"/"+release+"/src")
         tmp.append("")
         tmp.append("eval `scramv1 runtime -sh`")
-        tmp.append("cd "+self.CMSSWbasedir+release+"/harvesting_area")
+        tmp.append("cd "+self.CMSSWbasedir+"/"+release+"/harvesting_area")
         tmp.append("")
         tmp.append("crab -create -submit -cfg crab.cfg")
 
@@ -324,10 +315,10 @@ class CMSHarvester(object):
         self.bookkeep(DSs)
         orderedDSs=self.order_by_release(DSs)
         self.setcmssw = SetEnv()
+        self.setcmssw.basedir = self.CMSSWbasedir
         self.cmsswcfg = CMSSWcfg(str(CurrentWorkingDir))
         self.crab_cfg=crab_config(self.site)
         for release in orderedDSs.keys():
-            self.setcmssw.setUI()
             self.setcmssw.SetCMSSW(release)
 
             script = open("script.sh","w")

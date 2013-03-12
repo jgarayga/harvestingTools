@@ -3,52 +3,18 @@ import subprocess
 
 class SetEnv:
 
-    ''' 
-        Class to set up the CMSSW, Crab and UI enviroments.
-        Class to install, compile and build the CMSSW_X_Y_Z necessary for the harvesting.
+    '''
+        Class to check if CMSSW_X_Y_Z is installed in self.basedir,
+        by default '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting'
+        can be set up from the main harvester.py program via: self.SetEnv.basedir = '/absolute/base/directory/path'
+        If CMSSW_X_Y_Z is not installed: install and compile.
+        If it is installed: compile it.
     '''
 
     def __init__(self):
 
         self.cmsdir ="/afs/cern.ch/cms"
         self.basedir="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting"
-
-
-    def SourceFile(self, file):
-
-        '''
-            Function to SourceFiles as it would be done via command line
-        '''
-
-        if (os.path.isfile(file) == True):
-            subprocess.check_call("source "+file,shell=True)
-            return 1
-        else:
-            print("\nFile "+file+" does NOT exist. Exiting!!")
-            return 0
-
-
-
-    def setUI(self):
-
-        #cms   = self.cmsdir+"/cmsset_default.sh"
-        cmsui = self.cmsdir+"/LCG/LCG-2/UI/cms_ui_env.sh"
-        crab  = self.cmsdir+"/ccs/wm/scripts/Crab/crab.sh"
-        setup = self.cmsdir+"/caf/setup.sh"
-
-        print('Setting up the UI, CRAB, DBS enviroments...')
-
-        self.SourceFile(crab)
-        self.SourceFile(cmsui)
-        self.SourceFile(setup)
-
-        os.system('export X509_USER_PROXY=$HOME/x509up')
-        os.system('\n voms-proxy-info --all\n')
-
-#########################################################################################
-#    Next functions check if CMSSW_X_Y_Z  is installed. If it is not, it is installed.
-#    After the code is compiled
-#########################################################################################
 
     def IsInstalled(self, thisdir, cmssw):
 
