@@ -148,7 +148,7 @@ class CMSHarvester(object):
                           help="path to dir containing all CMSSW releases",
                           action="store",
                           dest="CMSSWbasedir",
-                          default="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting/",
+                          default="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting",
                           type="str")
 
         parser.set_defaults()
