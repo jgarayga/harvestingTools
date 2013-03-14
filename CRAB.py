@@ -8,9 +8,11 @@ class crab_config():
 
     def __init__(self):
         self.site="srm-eoscms.cern.ch"
+        self.EOSdir="/eos/cms/store/group/comm_dqm/harvesting_output"
 
-    def __init__(self,site):
+    def __init__(self,site,EOSdir):
         self.site=site
+        self.EOSdir=EOSdir
 
     def set_site(self,site):
         self.site=site
@@ -66,8 +68,8 @@ class crab_config():
         tmp.append("copy_data=1")
         tmp.append("check_user_remote_dir=0")
         tmp.append("storage_element=T2_CH_CERN")
-        tmp.append("caf_lfn=/store/group/comm_dqm/harvesting_output")
-        tmp.append("user_remote_dir="+self.DS.create_path(run).replace("/eos/cms/store/group/comm_dqm/harvesting_output/", ""))
+        tmp.append("caf_lfn="+self.EOSdir[8:])
+        tmp.append("user_remote_dir="+self.DS.create_path(run).replace(self.EOSdir, ""))
         tmp.append("")
 
         ## CRAB

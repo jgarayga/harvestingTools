@@ -71,7 +71,7 @@ class CMSHarvester(object):
         
         self.bookkeeping_file="harvesting_bookkeeping.txt"
         
-        self.castor_basepath="/eos/cms/store/group/comm_dqm/harvesting_output"
+        #self.castor_basepath="/eos/cms/store/group/comm_dqm/harvesting_output"
 
     def parse_cmd_line_options(self):
 
@@ -143,12 +143,20 @@ class CMSHarvester(object):
                           dest="SR_filepath",
                           default="",
                           type="str")
-
+        # absolute path to the directory where the CMSSW release and where the CRAB jobs will be submitted from.
         parser.add_option("", "--CMSSWbasedir",
                           help="path to dir containing all CMSSW releases",
                           action="store",
                           dest="CMSSWbasedir",
                           default="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting",
+                          type="str")
+        #absolute path to the directory in EOS where the output ROOT files will be stored and
+        #from where (later) the Upload will take the ROOT files from
+        parser.add_option("", "--EOSbasedir",
+                          help="absolute path to the storage directory in EOS",
+                          action="store",
+                          dest="EOSbasedir",
+                          default="/eos/cms/store/group/comm_dqm/harvesting_output",
                           type="str")
 
         parser.set_defaults()
@@ -157,6 +165,7 @@ class CMSHarvester(object):
         self.site=self.options.site
         self.SR_filepath=self.options.SR_filepath
         self.CMSSWbasedir=self.options.CMSSWbasedir
+        self.castor_basepath=self.options.EOSbasedir
 
     #def dataset_veto(self):
 
@@ -317,7 +326,7 @@ class CMSHarvester(object):
         self.setcmssw = SetEnv()
         self.setcmssw.basedir = self.CMSSWbasedir
         self.cmsswcfg = CMSSWcfg(str(CurrentWorkingDir))
-        self.crab_cfg=crab_config(self.site)
+        self.crab_cfg=crab_config(self.site, self.castor_basepath)
         for release in orderedDSs.keys():
             self.setcmssw.SetCMSSW(release)
 
