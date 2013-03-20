@@ -18,7 +18,6 @@ from Bookkeeping import *
 from rfstat import *  ##not used at all, can be removed??
 from CMSHarvesterHelpFormatter import *
 from SetCMSSW import *
-from Configuration.PyReleaseValidation.cmsDriverOptions import OptionsFromCommand
 from CMSSWcfg import *
 from CRAB import *
 
@@ -269,7 +268,7 @@ class CMSHarvester(object):
         try:
             subprocess.check_call(cmsDriverQuery, shell=True);
         except BaseException, error:
-            print "ERROR! (in harvester.py/create_cmssw_cfg)"
+            print "\nERROR! (in harvester.py/create_cmssw_cfg)"
             print error.__str__()
 
     def create_script(self, release):
@@ -329,6 +328,7 @@ class CMSHarvester(object):
         self.crab_cfg=crab_config(self.site, self.castor_basepath)
         for release in orderedDSs.keys():
             self.setcmssw.SetCMSSW(release)
+            self.cmsswcfg.CMSSWbasedir = self.CMSSWbasedir+"/"+release
 
             script = open("script.sh","w")
             script.write(self.create_script(release))
@@ -340,13 +340,11 @@ class CMSHarvester(object):
                 print "\nCMSSW cfg file created\n"
                 self.crab_cfg.set_DS(ds)
                 print "\nCRAB cfg file created\n"
-                #self.create_castor_dirs(ds)
                 for run in ds.runs:
                     crab_file = open("crab.cfg","w")
                     crab_file.write(self.crab_cfg.create_crab_config(run))
                     crab_file.close()
                     print "CRAB creating and submitting for "+str(ds.name)+" and run "+str(run)
-                    #subprocess.check_call("crab -create -submit", shell=True)
                     subprocess.check_call(self.CMSSWbasedir+"/"+release+"/harvesting_area/script.sh", stdout=sys.stdout, stderr=sys.stderr, shell=True);
         os.remove(sys.path[0]+"/harvester.lock")
 

@@ -6,14 +6,6 @@
 ## 1st: CRAB to be able to submit crab jobs
 source /afs/cern.ch/cms/ccs/wm/scripts/Crab/crab.sh ;
 
-## 2nd: CMSSW to be able to run python, and different DBS and json modules
-## unfortunatelly one CMSSW version must be selected, and must be installed in the indicated path
-## To be able to run the harvester, please be aware that ONLY the 
-cwd=$PWD ;
-basedir="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting" ;
-cd $basedir;
-scram project CMSSW CMSSW_5_3_8 ;
-cd $basedir/CMSSW_5_3_8/src ;
-eval `scramv1 runtime -sh` ;
-cd $cwd ;
+## 2nd: export DBS libraries
+export PYTHONBASE=/afs/cern.ch/cms/slc5_amd64_gcc462/cms/dbs-client/DBS_2_1_1_patch1_1/lib/ ;
 export X509_USER_PROXY=$HOME/x509up ;

@@ -4,11 +4,13 @@ class CMSSWcfg:
 
     def __init__(self):
         self.cmsDriverString= ""
+        self.CMSSWbasedir   = "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting"
         self.string         = ""
 
 
     def __init__(self, basepath):
         self.basepath = basepath
+        self.CMSSWbasedir   = "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/harvesting"
         self.cmsDriverString= ""
 
 
@@ -74,13 +76,14 @@ class CMSSWcfg:
         '''
 
         CMSSWcfgFileName = "harvesting_"+datasets.name.replace("/","",1).replace("/","__")+".py"
+        cmsDriverString = "cd "+self.CMSSWbasedir+"/src; eval `scramv1 runtime -sh`; cd ../harvesting_area ;"
 
         if cmp(SR_filepath, ""):
 
-            cmsDriverString = self.create_cmsDriver_query_for_SpecialRequest(datasets, SR_filepath)
+            cmsDriverString += self.create_cmsDriver_query_for_SpecialRequest(datasets, SR_filepath)
 
         elif not cmp(SR_filepath, ""):#standard cmsDriver command created for a DS
-            cmsDriverString="cmsDriver.py harvesting --no_exec --filein=dummy_value --magField=38T"
+            cmsDriverString+="cmsDriver.py harvesting --no_exec --filein=dummy_value --magField=38T"
             cmsDriverString+=" --conditions "+datasets.tag
 
             if datasets.type == "data":
