@@ -282,6 +282,8 @@ class CMSHarvester(object):
         tmp.append("eval `scramv1 runtime -sh`")
         tmp.append("cd "+self.CMSSWbasedir+"/"+release+"/harvesting_area")
         tmp.append("")
+	tmp.append("source /afs/cern.ch/cms/ccs/wm/scripts/Crab/crab.sh")
+	tmp.append("")
         tmp.append("crab -create -submit -cfg crab.cfg")
 
         script = "\n".join(tmp)
