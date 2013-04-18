@@ -273,17 +273,27 @@ class CMSHarvester(object):
 
     def create_script(self, release):
 
+        if (int(release[6])<5):
+            enviroment = "slc5_amd64_gcc434"
+        elif (int(release[6])>=5):
+            if (int(release[6])==5 and int(release[8])==0):   #for CMSSW_5_0_X
+                enviroment = "slc5_amd64_gcc434"
+            else:   #for CMSSW_5_1_X or later
+                enviroment = "slc5_amd64_gcc462"
+
         tmp = []
 
         tmp.append("#!/bin/zsh")
         tmp.append("")
         tmp.append("cd "+self.CMSSWbasedir+"/"+release+"/src")
         tmp.append("")
+        tmp.append("export SCRAM_ARCH="+enviroment)
+        tmp.append("")
         tmp.append("eval `scramv1 runtime -sh`")
         tmp.append("cd "+self.CMSSWbasedir+"/"+release+"/harvesting_area")
         tmp.append("")
-	tmp.append("source /afs/cern.ch/cms/ccs/wm/scripts/Crab/crab.sh")
-	tmp.append("")
+        tmp.append("source /afs/cern.ch/cms/ccs/wm/scripts/Crab/crab.sh")
+        tmp.append("")
         tmp.append("crab -create -submit -cfg crab.cfg")
 
         script = "\n".join(tmp)
