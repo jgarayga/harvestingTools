@@ -292,7 +292,8 @@ class CMSHarvester(object):
         tmp.append("eval `scramv1 runtime -sh`")
         tmp.append("cd "+self.CMSSWbasedir+"/"+release+"/harvesting_area")
         tmp.append("")
-        tmp.append("source /afs/cern.ch/cms/ccs/wm/scripts/Crab/crab.sh")
+        #tmp.append("source /afs/cern.ch/cms/ccs/wm/scripts/Crab/crab.sh") 
+	tmp.append("source /afs/cern.ch/cms/ccs/wm/scripts/Crab/CRAB_2_8_6/crab.sh") #we force this crab version due to incompatibilities with the latest 2_8_7 version 
         tmp.append("")
         tmp.append("crab -create -submit -cfg crab.cfg")
 
