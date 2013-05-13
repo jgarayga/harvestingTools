@@ -194,7 +194,7 @@ class CMSHarvester(object):
                     dic["datatype"].pop(i)
                     dic["release"].pop(i)
                     dic["dataset.tag"].pop(i)
-                    continue
+                    break
         return dic
     ## End of dbs_skim
 
